@@ -1,0 +1,707 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f2eb;
+    --surface: #fffefb;
+    --surface2: #f0ede4;
+    --border: #d6d0c0;
+    --accent: #c84b2f;
+    --accent2: #2b5f3e;
+    --text: #1a1612;
+    --muted: #7a7060;
+    --red: #c84b2f;
+    --green: #2b5f3e;
+    --font: 'Syne', sans-serif;
+    --mono: 'DM Mono', monospace;
+  }
+
+  body { background: var(--bg); font-family: var(--font); color: var(--text); min-height: 100vh; }
+
+  .app { display: grid; grid-template-rows: auto 1fr; min-height: 100vh; }
+
+  .topbar {
+    background: var(--text);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px;
+    height: 56px;
+    flex-shrink: 0;
+  }
+  .topbar-logo { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
+  .topbar-logo span { color: var(--accent); }
+  .topbar-sub { font-size: 11px; color: #888; font-family: var(--mono); letter-spacing: 1px; text-transform: uppercase; }
+  .topbar-date { font-size: 12px; color: #aaa; font-family: var(--mono); }
+
+  .layout { display: grid; grid-template-columns: 200px 1fr; flex: 1; }
+
+  .sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 24px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .sidebar-section { font-size: 10px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; font-family: var(--mono); padding: 16px 20px 6px; }
+  .nav-item {
+    padding: 9px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 0;
+    transition: background 0.12s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--muted);
+    border-left: 3px solid transparent;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: var(--surface2); color: var(--text); border-left-color: var(--accent); }
+  .nav-icon { width: 16px; height: 16px; flex-shrink: 0; }
+
+  .main { padding: 28px; overflow-y: auto; }
+
+  .page-header { margin-bottom: 24px; }
+  .page-title { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+  .page-desc { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .card-title { font-size: 13px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; font-family: var(--mono); }
+
+  .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .metric {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .metric-label { font-size: 11px; color: var(--muted); font-family: var(--mono); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 6px; }
+  .metric-value { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+  .metric-value.green { color: var(--green); }
+  .metric-value.red { color: var(--red); }
+  .metric-value.accent { color: var(--accent); }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .form-row.three { grid-template-columns: 1fr 1fr 1fr; }
+  .form-row.single { grid-template-columns: 1fr; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-label { font-size: 11px; color: var(--muted); font-family: var(--mono); letter-spacing: 0.5px; text-transform: uppercase; }
+  .form-input {
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: var(--mono);
+    font-size: 13px;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .form-input:focus { border-color: var(--accent); }
+  .form-select { padding: 9px 12px; border: 1px solid var(--border); border-radius: 6px; font-family: var(--mono); font-size: 13px; background: var(--bg); color: var(--text); outline: none; cursor: pointer; }
+
+  .btn {
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-family: var(--font);
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    border: none;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { opacity: 0.88; }
+  .btn-secondary { background: var(--text); color: #fff; }
+  .btn-secondary:hover { opacity: 0.85; }
+  .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost:hover { background: var(--surface2); }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+  .btn-danger { background: #fee; color: var(--red); border: 1px solid #f5c0b0; }
+  .btn-danger:hover { background: #fdd; }
+
+  .result-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 14px;
+  }
+  .result-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; font-size: 13px; }
+  .result-row:not(:last-child) { border-bottom: 1px solid var(--border); }
+  .result-row .label { color: var(--muted); }
+  .result-row .value { font-family: var(--mono); font-weight: 500; }
+  .result-row.total .label { font-weight: 700; color: var(--text); }
+  .result-row.total .value { font-size: 16px; font-weight: 700; color: var(--accent); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; padding: 8px 12px; font-size: 10px; color: var(--muted); font-family: var(--mono); letter-spacing: 1px; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-family: var(--mono); font-weight: 500; }
+  .badge-green { background: #e0f0e8; color: var(--green); }
+  .badge-red { background: #fde8e3; color: var(--red); }
+  .badge-gray { background: var(--surface2); color: var(--muted); }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+  .empty-state { text-align: center; padding: 40px; color: var(--muted); font-size: 13px; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .note { font-size: 11px; color: var(--muted); font-family: var(--mono); margin-top: 8px; }
+
+  .tab-bar { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+  .tab { padding: 10px 20px; font-size: 13px; font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; color: var(--muted); transition: color 0.15s; }
+  .tab.active { color: var(--text); border-bottom-color: var(--accent); }
+  .tab:hover { color: var(--text); }
+
+  .month-picker { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+  .month-picker select { font-family: var(--font); padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); cursor: pointer; font-size: 13px; }
+
+  .alert { padding: 12px 16px; border-radius: 6px; font-size: 13px; margin-bottom: 14px; }
+  .alert-success { background: #e8f5ee; color: var(--green); border: 1px solid #b0dfc0; }
+  .alert-error { background: #fde8e3; color: var(--red); border: 1px solid #f5c0b0; }
+
+  .page { display: none; }
+  .page.active { display: block; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div>
+      <div class="topbar-logo">Leb<span>Market</span> <span style="color:#aaa;font-weight:400">Accounting</span></div>
+      <div class="topbar-sub">Business Management System</div>
+    </div>
+    <div class="topbar-date" id="topbar-date"></div>
+  </div>
+
+  <div class="layout">
+    <div class="sidebar">
+      <div class="sidebar-section">Overview</div>
+      <div class="nav-item active" onclick="navigate('dashboard')">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1" fill="currentColor" opacity="0.7"/><rect x="9" y="1" width="6" height="6" rx="1" fill="currentColor" opacity="0.7"/><rect x="1" y="9" width="6" height="6" rx="1" fill="currentColor" opacity="0.7"/><rect x="9" y="9" width="6" height="6" rx="1" fill="currentColor" opacity="0.4"/></svg>
+        Dashboard
+      </div>
+
+      <div class="sidebar-section">Calculators</div>
+      <div class="nav-item" onclick="navigate('shipping-cost')">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><rect x="1" y="5" width="10" height="8" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M11 7h2.5l1.5 3v2h-4V7Z" stroke="currentColor" stroke-width="1.2"/><circle cx="4" cy="13.5" r="1.5" fill="currentColor" opacity="0.7"/><circle cx="12" cy="13.5" r="1.5" fill="currentColor" opacity="0.7"/></svg>
+        Shipping Cost
+      </div>
+      <div class="nav-item" onclick="navigate('shipping-quote')">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M8 1L10 5h4l-3 3 1 4-4-2-4 2 1-4-3-3h4z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+        Shipping Quote
+      </div>
+
+      <div class="sidebar-section">Business</div>
+      <div class="nav-item" onclick="navigate('orders')">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M2 2h12v12a1 1 0 01-1 1H3a1 1 0 01-1-1V2Z" stroke="currentColor" stroke-width="1.2"/><path d="M5 6h6M5 9h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Orders
+      </div>
+      <div class="nav-item" onclick="navigate('customers')">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.2"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Customers
+      </div>
+      <div class="nav-item" onclick="navigate('profit')">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M2 12l4-4 3 3 5-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Monthly P&L
+      </div>
+    </div>
+
+    <div class="main">
+
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="page-header">
+          <div class="page-title">Dashboard</div>
+          <div class="page-desc">Overview of LebMarket business activity</div>
+        </div>
+        <div class="metrics-grid" id="dash-metrics">
+          <div class="metric"><div class="metric-label">Total Orders</div><div class="metric-value" id="dm-orders">0</div></div>
+          <div class="metric"><div class="metric-label">Revenue</div><div class="metric-value green" id="dm-revenue">$0.00</div></div>
+          <div class="metric"><div class="metric-label">Total Cost</div><div class="metric-value red" id="dm-cost">$0.00</div></div>
+          <div class="metric"><div class="metric-label">Net Profit</div><div class="metric-value accent" id="dm-profit">$0.00</div></div>
+        </div>
+        <div class="two-col">
+          <div class="card">
+            <div class="card-title">Recent Orders</div>
+            <div id="dash-orders">
+              <div class="empty-state">No orders yet. Add orders in the Orders tab.</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Customer Count</div>
+            <div style="font-size:40px;font-weight:700;padding:16px 0;color:var(--accent)" id="dm-customers">0</div>
+            <div class="note">Registered customers in the system</div>
+            <hr class="divider">
+            <div class="card-title">Quick Tip</div>
+            <div style="font-size:13px;color:var(--muted);line-height:1.6">
+              Use the <b style="color:var(--text)">Shipping Quote</b> calculator to generate customer quotes (10% of goods + $23/kg, rounded up to 0.5kg). Use <b style="color:var(--text)">Shipping Cost</b> to track your internal cost at $15/kg.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SHIPPING COST CALC -->
+      <div class="page" id="page-shipping-cost">
+        <div class="page-header">
+          <div class="page-title">Shipping Cost Calculator</div>
+          <div class="page-desc">Internal shipping cost — $15.00 per kg</div>
+        </div>
+        <div class="two-col">
+          <div class="card">
+            <div class="card-title">Enter Package Details</div>
+            <div class="form-row single">
+              <div class="form-group">
+                <label class="form-label">Weight (kg)</label>
+                <input class="form-input" type="number" id="sc-weight" placeholder="0.00" min="0" step="0.1" oninput="calcShippingCost()">
+              </div>
+            </div>
+            <div class="form-row single">
+              <div class="form-group">
+                <label class="form-label">Number of Packages</label>
+                <input class="form-input" type="number" id="sc-qty" placeholder="1" min="1" value="1" oninput="calcShippingCost()">
+              </div>
+            </div>
+            <div class="note">Rate: $15.00 / kg — internal cost to LebMarket</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Cost Breakdown</div>
+            <div class="result-box">
+              <div class="result-row"><span class="label">Weight per package</span><span class="value" id="sc-r-weight">—</span></div>
+              <div class="result-row"><span class="label">Total packages</span><span class="value" id="sc-r-qty">—</span></div>
+              <div class="result-row"><span class="label">Total weight</span><span class="value" id="sc-r-totalw">—</span></div>
+              <div class="result-row"><span class="label">Rate</span><span class="value">$15.00 / kg</span></div>
+              <div class="result-row total"><span class="label">Total Shipping Cost</span><span class="value" id="sc-r-total">$0.00</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SHIPPING QUOTE CALC -->
+      <div class="page" id="page-shipping-quote">
+        <div class="page-header">
+          <div class="page-title">Shipping Quote Calculator</div>
+          <div class="page-desc">Customer quote: 10% of goods value + $23/kg, rounded up to nearest 0.5kg</div>
+        </div>
+        <div class="two-col">
+          <div class="card">
+            <div class="card-title">Package & Goods Details</div>
+            <div class="form-row single">
+              <div class="form-group">
+                <label class="form-label">Goods Value ($)</label>
+                <input class="form-input" type="number" id="sq-value" placeholder="0.00" min="0" step="0.01" oninput="calcShippingQuote()">
+              </div>
+            </div>
+            <div class="form-row single">
+              <div class="form-group">
+                <label class="form-label">Actual Weight (kg)</label>
+                <input class="form-input" type="number" id="sq-weight" placeholder="0.00" min="0" step="0.01" oninput="calcShippingQuote()">
+              </div>
+            </div>
+            <div class="form-row single">
+              <div class="form-group">
+                <label class="form-label">Number of Packages</label>
+                <input class="form-input" type="number" id="sq-qty" placeholder="1" min="1" value="1" oninput="calcShippingQuote()">
+              </div>
+            </div>
+            <div class="note">Weight rounds UP to nearest 0.5kg before calculating rate.</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Quote Breakdown</div>
+            <div class="result-box">
+              <div class="result-row"><span class="label">Actual weight / pkg</span><span class="value" id="sq-r-actual">—</span></div>
+              <div class="result-row"><span class="label">Rounded weight / pkg</span><span class="value" id="sq-r-rounded">—</span></div>
+              <div class="result-row"><span class="label">Total rounded weight</span><span class="value" id="sq-r-totalw">—</span></div>
+              <div class="result-row"><span class="label">10% of goods value</span><span class="value" id="sq-r-pct">—</span></div>
+              <div class="result-row"><span class="label">Shipping rate ($23 × kg)</span><span class="value" id="sq-r-rate">—</span></div>
+              <div class="result-row total"><span class="label">Total Customer Quote</span><span class="value" id="sq-r-total">$0.00</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ORDERS -->
+      <div class="page" id="page-orders">
+        <div class="page-header">
+          <div class="page-title">Orders</div>
+          <div class="page-desc">Track all customer orders and profitability</div>
+        </div>
+        <div id="order-alert" style="display:none"></div>
+        <div class="card">
+          <div class="card-title">Add New Order</div>
+          <div class="form-row three">
+            <div class="form-group">
+              <label class="form-label">Order #</label>
+              <input class="form-input" id="o-num" placeholder="e.g. LM-001">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Customer</label>
+              <select class="form-select" id="o-customer"><option value="">Select customer...</option></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Date</label>
+              <input class="form-input" type="date" id="o-date">
+            </div>
+          </div>
+          <div class="form-row three">
+            <div class="form-group">
+              <label class="form-label">Goods Cost ($)</label>
+              <input class="form-input" type="number" id="o-cost" placeholder="0.00" min="0" step="0.01">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Sale Price ($)</label>
+              <input class="form-input" type="number" id="o-price" placeholder="0.00" min="0" step="0.01">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Shipping Cost ($)</label>
+              <input class="form-input" type="number" id="o-ship" placeholder="0.00" min="0" step="0.01">
+            </div>
+          </div>
+          <div class="form-row single">
+            <div class="form-group">
+              <label class="form-label">Notes</label>
+              <input class="form-input" id="o-notes" placeholder="Optional notes...">
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="addOrder()">Add Order</button>
+        </div>
+        <div class="card">
+          <div class="card-title">All Orders</div>
+          <div id="orders-table">
+            <div class="empty-state">No orders yet.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CUSTOMERS -->
+      <div class="page" id="page-customers">
+        <div class="page-header">
+          <div class="page-title">Customers</div>
+          <div class="page-desc">Customer directory</div>
+        </div>
+        <div id="cust-alert" style="display:none"></div>
+        <div class="card">
+          <div class="card-title">Add Customer</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Full Name</label>
+              <input class="form-input" id="c-name" placeholder="e.g. John Doe">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone</label>
+              <input class="form-input" id="c-phone" placeholder="+1 555 000 0000">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input class="form-input" id="c-email" placeholder="customer@email.com">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Address</label>
+              <input class="form-input" id="c-address" placeholder="City, Country">
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="addCustomer()">Add Customer</button>
+        </div>
+        <div class="card">
+          <div class="card-title">Customer Directory</div>
+          <div id="customers-table">
+            <div class="empty-state">No customers yet.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROFIT / P&L -->
+      <div class="page" id="page-profit">
+        <div class="page-header">
+          <div class="page-title">Monthly P&L Report</div>
+          <div class="page-desc">Profit and loss analysis by month</div>
+        </div>
+        <div class="month-picker">
+          <span style="font-size:13px;color:var(--muted);font-family:var(--mono)">Filter:</span>
+          <select id="pl-month" onchange="renderPL()">
+            <option value="all">All Time</option>
+            <option value="2025-01">Jan 2025</option>
+            <option value="2025-02">Feb 2025</option>
+            <option value="2025-03">Mar 2025</option>
+            <option value="2025-04">Apr 2025</option>
+            <option value="2025-05">May 2025</option>
+            <option value="2025-06">Jun 2025</option>
+            <option value="2025-07">Jul 2025</option>
+            <option value="2025-08">Aug 2025</option>
+            <option value="2025-09">Sep 2025</option>
+            <option value="2025-10">Oct 2025</option>
+            <option value="2025-11">Nov 2025</option>
+            <option value="2025-12">Dec 2025</option>
+            <option value="2026-01">Jan 2026</option>
+            <option value="2026-02">Feb 2026</option>
+            <option value="2026-03">Mar 2026</option>
+            <option value="2026-04">Apr 2026</option>
+          </select>
+        </div>
+        <div class="metrics-grid">
+          <div class="metric"><div class="metric-label">Orders</div><div class="metric-value" id="pl-orders">0</div></div>
+          <div class="metric"><div class="metric-label">Revenue</div><div class="metric-value green" id="pl-rev">$0.00</div></div>
+          <div class="metric"><div class="metric-label">COGS + Ship</div><div class="metric-value red" id="pl-costs">$0.00</div></div>
+          <div class="metric"><div class="metric-label">Net Profit</div><div class="metric-value accent" id="pl-profit">$0.00</div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">P&L Breakdown</div>
+          <div id="pl-table"><div class="empty-state">No data for selected period.</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  let customers = JSON.parse(localStorage.getItem('lm_customers') || '[]');
+  let orders = JSON.parse(localStorage.getItem('lm_orders') || '[]');
+
+  function save() {
+    localStorage.setItem('lm_customers', JSON.stringify(customers));
+    localStorage.setItem('lm_orders', JSON.stringify(orders));
+  }
+
+  function fmt(n) { return '$' + n.toFixed(2); }
+  function fmtKg(n) { return n.toFixed(2) + ' kg'; }
+
+  document.getElementById('topbar-date').textContent = new Date().toLocaleDateString('en-US', {weekday:'short',year:'numeric',month:'short',day:'numeric'});
+
+  function navigate(page) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('page-' + page).classList.add('active');
+    event.currentTarget.classList.add('active');
+    if (page === 'dashboard') renderDashboard();
+    if (page === 'orders') populateCustomerSelect();
+    if (page === 'profit') renderPL();
+  }
+
+  function roundUpHalf(w) {
+    return Math.ceil(w * 2) / 2;
+  }
+
+  function calcShippingCost() {
+    const w = parseFloat(document.getElementById('sc-weight').value) || 0;
+    const q = parseInt(document.getElementById('sc-qty').value) || 1;
+    const total = w * q * 15;
+    document.getElementById('sc-r-weight').textContent = fmtKg(w);
+    document.getElementById('sc-r-qty').textContent = q;
+    document.getElementById('sc-r-totalw').textContent = fmtKg(w * q);
+    document.getElementById('sc-r-total').textContent = fmt(total);
+  }
+
+  function calcShippingQuote() {
+    const val = parseFloat(document.getElementById('sq-value').value) || 0;
+    const w = parseFloat(document.getElementById('sq-weight').value) || 0;
+    const q = parseInt(document.getElementById('sq-qty').value) || 1;
+    const rounded = roundUpHalf(w);
+    const totalRounded = rounded * q;
+    const pct = val * 0.10;
+    const rate = totalRounded * 23;
+    const total = pct + rate;
+    document.getElementById('sq-r-actual').textContent = fmtKg(w);
+    document.getElementById('sq-r-rounded').textContent = fmtKg(rounded);
+    document.getElementById('sq-r-totalw').textContent = fmtKg(totalRounded);
+    document.getElementById('sq-r-pct').textContent = fmt(pct);
+    document.getElementById('sq-r-rate').textContent = fmt(rate);
+    document.getElementById('sq-r-total').textContent = fmt(total);
+  }
+
+  function showAlert(id, msg, type) {
+    const el = document.getElementById(id);
+    el.className = 'alert alert-' + type;
+    el.textContent = msg;
+    el.style.display = 'block';
+    setTimeout(() => { el.style.display = 'none'; }, 3000);
+  }
+
+  function addCustomer() {
+    const name = document.getElementById('c-name').value.trim();
+    if (!name) { showAlert('cust-alert', 'Customer name is required.', 'error'); return; }
+    const c = {
+      id: Date.now().toString(),
+      name,
+      phone: document.getElementById('c-phone').value.trim(),
+      email: document.getElementById('c-email').value.trim(),
+      address: document.getElementById('c-address').value.trim(),
+      created: new Date().toISOString().split('T')[0]
+    };
+    customers.push(c);
+    save();
+    ['c-name','c-phone','c-email','c-address'].forEach(id => document.getElementById(id).value = '');
+    renderCustomers();
+    showAlert('cust-alert', 'Customer added successfully.', 'success');
+  }
+
+  function deleteCustomer(id) {
+    if (!confirm('Delete this customer?')) return;
+    customers = customers.filter(c => c.id !== id);
+    save();
+    renderCustomers();
+  }
+
+  function renderCustomers() {
+    const el = document.getElementById('customers-table');
+    if (!customers.length) { el.innerHTML = '<div class="empty-state">No customers yet.</div>'; return; }
+    el.innerHTML = `<table>
+      <thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>Address</th><th>Since</th><th></th></tr></thead>
+      <tbody>${customers.map(c => `<tr>
+        <td><b>${c.name}</b></td>
+        <td style="font-family:var(--mono);color:var(--muted)">${c.phone||'—'}</td>
+        <td style="font-family:var(--mono);color:var(--muted)">${c.email||'—'}</td>
+        <td style="color:var(--muted)">${c.address||'—'}</td>
+        <td style="font-family:var(--mono);font-size:11px;color:var(--muted)">${c.created}</td>
+        <td><button class="btn btn-ghost btn-sm btn-danger" onclick="deleteCustomer('${c.id}')">Delete</button></td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+  }
+
+  function populateCustomerSelect() {
+    const sel = document.getElementById('o-customer');
+    sel.innerHTML = '<option value="">Select customer...</option>' + customers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  }
+
+  function addOrder() {
+    const num = document.getElementById('o-num').value.trim();
+    const custId = document.getElementById('o-customer').value;
+    const date = document.getElementById('o-date').value;
+    const cost = parseFloat(document.getElementById('o-cost').value) || 0;
+    const price = parseFloat(document.getElementById('o-price').value) || 0;
+    const ship = parseFloat(document.getElementById('o-ship').value) || 0;
+    if (!num || !date) { showAlert('order-alert', 'Order number and date are required.', 'error'); return; }
+    const cust = customers.find(c => c.id === custId);
+    const profit = price - cost - ship;
+    const o = {
+      id: Date.now().toString(),
+      num, date,
+      customerId: custId,
+      customerName: cust ? cust.name : 'Walk-in',
+      cost, price, ship, profit,
+      notes: document.getElementById('o-notes').value.trim()
+    };
+    orders.push(o);
+    save();
+    ['o-num','o-cost','o-price','o-ship','o-notes'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('o-customer').value = '';
+    document.getElementById('o-date').value = '';
+    renderOrders();
+    showAlert('order-alert', 'Order added successfully.', 'success');
+  }
+
+  function deleteOrder(id) {
+    if (!confirm('Delete this order?')) return;
+    orders = orders.filter(o => o.id !== id);
+    save();
+    renderOrders();
+  }
+
+  function renderOrders() {
+    const el = document.getElementById('orders-table');
+    if (!orders.length) { el.innerHTML = '<div class="empty-state">No orders yet.</div>'; return; }
+    const sorted = [...orders].sort((a,b) => b.date.localeCompare(a.date));
+    el.innerHTML = `<table>
+      <thead><tr><th>Order #</th><th>Date</th><th>Customer</th><th>Sale Price</th><th>COGS</th><th>Shipping</th><th>Profit</th><th>Status</th><th></th></tr></thead>
+      <tbody>${sorted.map(o => `<tr>
+        <td><b style="font-family:var(--mono)">${o.num}</b></td>
+        <td style="font-family:var(--mono);font-size:12px;color:var(--muted)">${o.date}</td>
+        <td>${o.customerName}</td>
+        <td style="font-family:var(--mono)">${fmt(o.price)}</td>
+        <td style="font-family:var(--mono);color:var(--muted)">${fmt(o.cost)}</td>
+        <td style="font-family:var(--mono);color:var(--muted)">${fmt(o.ship)}</td>
+        <td style="font-family:var(--mono);font-weight:500;color:${o.profit>=0?'var(--green)':'var(--red)'}">${fmt(o.profit)}</td>
+        <td><span class="badge ${o.profit>=0?'badge-green':'badge-red'}">${o.profit>=0?'Profit':'Loss'}</span></td>
+        <td><button class="btn btn-ghost btn-sm btn-danger" onclick="deleteOrder('${o.id}')">Del</button></td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+  }
+
+  function renderDashboard() {
+    const total = orders.reduce((a,o) => a + o.price, 0);
+    const costs = orders.reduce((a,o) => a + o.cost + o.ship, 0);
+    const profit = orders.reduce((a,o) => a + o.profit, 0);
+    document.getElementById('dm-orders').textContent = orders.length;
+    document.getElementById('dm-revenue').textContent = fmt(total);
+    document.getElementById('dm-cost').textContent = fmt(costs);
+    document.getElementById('dm-profit').textContent = fmt(profit);
+    document.getElementById('dm-profit').className = 'metric-value ' + (profit >= 0 ? 'green' : 'red');
+    document.getElementById('dm-customers').textContent = customers.length;
+    const el = document.getElementById('dash-orders');
+    if (!orders.length) { el.innerHTML = '<div class="empty-state">No orders yet.</div>'; return; }
+    const recent = [...orders].sort((a,b) => b.date.localeCompare(a.date)).slice(0, 5);
+    el.innerHTML = `<table><thead><tr><th>Order #</th><th>Customer</th><th>Profit</th></tr></thead><tbody>${recent.map(o => `<tr>
+      <td><b style="font-family:var(--mono)">${o.num}</b></td>
+      <td>${o.customerName}</td>
+      <td style="font-family:var(--mono);color:${o.profit>=0?'var(--green)':'var(--red)'}">${fmt(o.profit)}</td>
+    </tr>`).join('')}</tbody></table>`;
+  }
+
+  function renderPL() {
+    const month = document.getElementById('pl-month').value;
+    let filtered = orders;
+    if (month !== 'all') filtered = orders.filter(o => o.date.startsWith(month));
+    const rev = filtered.reduce((a,o) => a + o.price, 0);
+    const costs = filtered.reduce((a,o) => a + o.cost + o.ship, 0);
+    const profit = filtered.reduce((a,o) => a + o.profit, 0);
+    document.getElementById('pl-orders').textContent = filtered.length;
+    document.getElementById('pl-rev').textContent = fmt(rev);
+    document.getElementById('pl-costs').textContent = fmt(costs);
+    document.getElementById('pl-profit').textContent = fmt(profit);
+    document.getElementById('pl-profit').className = 'metric-value ' + (profit >= 0 ? 'green' : 'red');
+    const el = document.getElementById('pl-table');
+    if (!filtered.length) { el.innerHTML = '<div class="empty-state">No orders for this period.</div>'; return; }
+    const margin = rev > 0 ? ((profit/rev)*100).toFixed(1) : '0.0';
+    el.innerHTML = `
+      <div class="result-box" style="margin-bottom:16px">
+        <div class="result-row"><span class="label">Total Revenue (sales)</span><span class="value" style="color:var(--green)">${fmt(rev)}</span></div>
+        <div class="result-row"><span class="label">Cost of Goods Sold</span><span class="value" style="color:var(--red)">${fmt(filtered.reduce((a,o)=>a+o.cost,0))}</span></div>
+        <div class="result-row"><span class="label">Shipping Costs</span><span class="value" style="color:var(--red)">${fmt(filtered.reduce((a,o)=>a+o.ship,0))}</span></div>
+        <div class="result-row"><span class="label">Total Expenses</span><span class="value" style="color:var(--red)">${fmt(costs)}</span></div>
+        <div class="result-row total"><span class="label">Net Profit / Loss</span><span class="value" style="color:${profit>=0?'var(--green)':'var(--red)'}">${fmt(profit)}</span></div>
+        <div class="result-row"><span class="label">Profit Margin</span><span class="value">${margin}%</span></div>
+      </div>
+      <table>
+        <thead><tr><th>Order #</th><th>Date</th><th>Customer</th><th>Revenue</th><th>COGS</th><th>Shipping</th><th>Profit</th></tr></thead>
+        <tbody>${[...filtered].sort((a,b)=>b.date.localeCompare(a.date)).map(o=>`<tr>
+          <td style="font-family:var(--mono)">${o.num}</td>
+          <td style="font-family:var(--mono);font-size:12px;color:var(--muted)">${o.date}</td>
+          <td>${o.customerName}</td>
+          <td style="font-family:var(--mono)">${fmt(o.price)}</td>
+          <td style="font-family:var(--mono);color:var(--muted)">${fmt(o.cost)}</td>
+          <td style="font-family:var(--mono);color:var(--muted)">${fmt(o.ship)}</td>
+          <td style="font-family:var(--mono);font-weight:500;color:${o.profit>=0?'var(--green)':'var(--red)'}">${fmt(o.profit)}</td>
+        </tr>`).join('')}</tbody>
+      </table>`;
+  }
+
+  renderCustomers();
+  renderOrders();
+  renderDashboard();
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('o-date').value = today;
+</script>
+</body>
+</html>
